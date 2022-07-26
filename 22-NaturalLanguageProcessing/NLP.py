@@ -9,6 +9,10 @@ Created on Mon Jul 25 11:03:38 2022
 import pandas as pd
 import numpy as np
 import re
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
 import nltk
 from nltk.stem.porter import PorterStemmer as ps
 nltk.download("stopwords")
@@ -37,4 +41,45 @@ from nltk.corpus import stopwords
 
 #data cleaning is done now let's import it
 df=pd.read_csv("reviews.csv")
+
+
+# Reading dataset row by row 
+filtered_words=[]
+
+for i in range(len(df)):
+    review=df["Review"][i]
+    review=review.split()
+    review=[ps().stem(word) for word in review if not word in set(stopwords.words('english'))] # stem is using to find root of the word
+    review=" ".join(review)
+    filtered_words.append(review)
+# data preprocessing
+cv=CountVectorizer (max_features=2000)
+x=cv.fit_transform(filtered_words).toarray()
+y=df["Liked"].values
+
+x_train,x_test,y_train,y_test=train_test_split(x,y, test_size=0.2,random_state=2)
+
+#model selection
+ghb=GaussianNB()
+
+ghb.fit(x_train,y_train)
+y_pred=ghb.predict(x_test)
+
+#test
+cm=confusion_matrix(y_test,y_pred)
+print(cm)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
